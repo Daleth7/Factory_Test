@@ -6,6 +6,21 @@
 	//All measurements follow the metric system kms
 using std::string;
 using std::list;
+
+enum class PartType{
+	Claw,
+	Drill,
+	SmartPlate,
+	Motor,
+	Servo,
+	UltrasonicSensor,
+	LightSensor,
+	Monitor,
+	Antenna,
+	HUBBlock,
+	Microcontroller,
+	None
+};
 	//Create an abstract classification for robot parts
 class RobotPart{
 	public:
@@ -134,17 +149,17 @@ struct Microcontroller: public RobotPart{
 		list<unsigned short> __data__;
 		template<typename T>
 			struct DataManager{
-				T __idata__;
-					template<typename T>
+			T __idata__;
+			template<typename T>
 				void Input(T newdata){
-					/*Do stuff*/
-				}
-				T Output()const{
-					/*do w/e stuff*/
-					return __idata__;
-				}
-				/*Functions for managing the data*/
-			};
+				/*Do stuff*/
+			}
+			T Output()const{
+				/*do w/e stuff*/
+				return __idata__;
+			}
+			/*Functions for managing the data*/
+		};
 };
 
 #endif

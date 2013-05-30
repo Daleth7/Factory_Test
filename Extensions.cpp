@@ -3,27 +3,24 @@
 	
 #include <list>
 #include <string>
+#include <memory>
 
 using std::list;
 using std::string;
+using std::unique_ptr;
 
-enum class ExtensionType;
-class RobotPart;
-
-RobotExtensions::RobotExtensions(){
+RobotExtensions::RobotExtensions():
+	RE_Name("HUB")
+{
 	PartsList__.pushback(new HUBBlock());
-	Link__.push_back(Wire);
-	Link__.push_back(Snap);
-	Link__.push_back(Gear);
-	Link__.push_back(Male_Female);
-	RE_Name = "HUB";
+	Link__.push_back(RobotPart::Wire);
+	Link__.push_back(RobotPart::Snap);
+	Link__.push_back(RobotPart::Gear);
+	Link__.push_back(RobotPart::Male_Female);
 }
-RobotExtensions::~RobotExtensions(){
-	for(auto part__ = PartsList__.begin(); part__ != PartsList__.end(); part__++)
-		delete (*part);
-}
+RobotExtensions::~RobotExtensions(){}
 string RobotExtensions::Name()const{return RE_Name__;}
-void RobotExtensions::Attach(const list<RobotPart*>& newparts){
+void RobotExtensions::Attach(const list<unique_ptr<RobotPart>>& newparts){
 	PartsList__.resize(PartsList__.size() + newparts.size());
 	for(auto part___ = newparts.begin(); part__ != newparts.end(); part___++){
 		if(Link__.empty())	break;
@@ -36,21 +33,65 @@ void RobotExtensions::Attach(const list<RobotPart*>& newparts){
 		}
 	}
 }
-RobotExtensions* RobotExtensions::RobotExtensions(ExtensionType Etype, const list<RobotPart*>& new_parts){
-	switch(Etype){
-		case Framework:		return new Frame(new_parts);		break;
-		case Chassis:		return new Chassis(new_parts);		break;
-		case SensorModule:	return new SensorModule(new_parts);	break;
-		case DrillArm:		return new DrillArm(new_parts);		break;
-		case GrabbingArm:	return new GrabbingArm(new_parts);	break;
-		case Joint:			return new Joint(new_parts);		break;
-		case DriverWheel:	return new DriverWheel(new_parts);	break;
+void RobotExtensions::AppendPart(PartType newtype,const int max){
+	switch(newtype){
+		case PartType::Claw:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new Claw());
+			break;
+		case PartType::Drill:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new Drill());
+			break;
+		case PartType::SmartPlate:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new SmartPlate());
+			break;
+		case PartType::Motor:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new Motor());
+			break;
+		case PartType::Servo:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new Servo());
+			break;
+		case PartType::UltrasonicSensor:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new UltrasonicSensor());
+			break;
+		case PartType::LightSensor:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new LightSensor());
+			break;
+		case PartType::Monitor:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new Monitor());
+			break;
+		case PartType::Antenna:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new Antenna());
+			break;
+		case PartType::Microcontroller:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new Microcontroller());
+			break;
+		case PartType::HUBBlock:
+		default:
+			for(int i=0; i<max; ++i)	PartsList__.push_back(new HUBBlock());
+			break;
+	}
+}
+inline void RobotExtensions::AppendLink(RobotPart::Connection_t newcon, const int max){
+	for(int i=0; i<max; ++i)	Link__.push_back(newcon);
+}
+inline void RobotExtensions::ExecuteAll(){
+	for(auto iter = PartsList__.begin(); iter != PartsList__.end(); ++iter)	(*iter)->Execute();
+}
+
+RobotExtensions* RobotExtensions(ExtensionType Etype, const list<unique_ptr<RobotPart>>& new_parts){
+	switch(ExtensionType::Etype){
+		case ExtensionType::Frame:			return new Frame(new_parts);		break;
+		case ExtensionType::Chassis:		return new Chassis(new_parts);		break;
+		case ExtensionType::SensorModule:	return new SensorModule(new_parts);	break;
+		case ExtensionType::DrillArm:		return new DrillArm(new_parts);		break;
+		case ExtensionType::GrabbingArm:	return new GrabbingArm(new_parts);	break;
+		case ExtensionType::Joint:			return new Joint(new_parts);		break;
+		case ExtensionType::DriverWheel:	return new DriverWheel(new_parts);	break;
 		default:			return new RobotExtension();		break;
 	}
 }
 
-
-Frame::Frame(const list<RobotPart*>& newparts):
+Frame::Frame(const list<unique_ptr<RobotPart>>& newparts):
 	RE_Name("Frame")
 {
 	CreateDefault();
@@ -58,15 +99,13 @@ Frame::Frame(const list<RobotPart*>& newparts):
 }
 Frame::~Frame(){}
 void Frame::CreateDefault(){
-	const int minimum_bars_need(10);
-	for(int i = 0; i < minimum_bars_need; i++){
-		PartsList__.push_back(new SmartBar());
-		Link__.push_back(Male_Female);
-		if(i%2 == 0)	Link__.push_back(Snap);
-	}
+	AppendPart(PartType::SmartBar,minimum_bars_need);
+	AppendLink(RobotPart::Male_Female,minimum_mf);
+	AppendLink(RobotPart::Snap,minimum_snap);
 }
+void Frame::Execute(){ExecuteAll();}
 
-Chassis::Chassis(const list<RobotPart*>& newparts):
+Chassis::Chassis(const list<unique_ptr<RobotPart>>& newparts):
 	RE_Name("Chassis")
 {
 	CreateDefault();
@@ -74,21 +113,33 @@ Chassis::Chassis(const list<RobotPart*>& newparts):
 }
 Chassis::~Chassis(){}
 void Chassis::CreateDefault(){
-	const int 
-		minimum_plates_needed(50),
-		minimum_bars_need(7)
+	AppendPart(PartType::SmartPlate,minimum_plates_needed);
+	AppendPart(PartType::SmartBar,minimum_bars_need);
+	AppendPart(PartType::Monitor,minimum_monitors_need);
+	AppendLink(RobotPart::Snap,minimum_snap);
+	AppendLink(RobotPart::Wire,minimum_wire);
+}
+void Chassis::Execute(){
+	auto
+		end = PartsList__.begin()
+		iter = PartsList__.begin()
 	;
-	for(int i = 0; i < minimum_plates_needed; i++){
-		PartsList__.push_back(new SmartPlate());
-		if(i%2 == 0)	Link__.push_back(Snap);
+	advance(end,minimum_plates_needed+minimum_bars_need+1);
+	try{
+		for(; iter != end; ++iter)
+			(*iter)->Execute();
+		advance(end,minimum_monitors_need);
+		for(; iter != end; ++iter){
+			(*iter)->Execute();
+			(*iter)->Print("Status: Good",true);
+		}
+	}catch(const char* emsg){
+		iter = end = PartsList.begin()*****************************************************
 	}
-	for(int i = 0; i < minimum_bars_need; i++){
-		PartsList__.push_back(new SmartBar());
-		Link__.push_back(Wire);
-	}
+	minimum_monitors_need
 }
 
-SensorModule::SensorModule(const list<RobotPart*>& newparts):
+SensorModule::SensorModule(const list<unique_ptr<RobotPart>>& newparts):
 	RE_Name("Sensor Module")
 {
 	CreateDefault();
@@ -96,93 +147,80 @@ SensorModule::SensorModule(const list<RobotPart*>& newparts):
 }
 SensorModule::~SensorModule(){}
 void SensorModule::CreateDefault(){
-	const int
-		minimum_plates(4),
-		minimum_servos(1),
-		minimum_lsensors(16),
-		minimum_ussensors(4)
-	;
-	for(int i=0; i<minimum_plates; i++)
-		PartsList__.push_back(new SmartPlate());
-	for(int i=0; i<minimum_servos; i++)
-		PartsList__.push_back(new Servo());
-	for(int i=0; i<minimum_lsensors; i++)
-		PartsList__.push_back(new LightSensor());
-	for(int i=0; i<minimum_ussensors; i++)
-		PartsList__.push_back(new UltrasonicSensor());
-	Link__.push_back(Male_Female);
-	Link__.push_back(Gear);
+	AppendPart(PartType::SmartPlate,minimum_plates);
+	AppendPart(PartType::Servo,minimum_servos);
+	AppendPart(PartType::LightSensor,minimum_lsensors);
+	AppendPart(PartType::UltrasonicSensor,minimum_ussensors);
+	AppendLink(RobotPart::Male_Female,minimum_mf);
+	AppendLink(RobotPart::Gear,minimum_gear);
 }
 
-DrillArm::DrillArm(const list<RobotPart*>& newparts){
+DrillArm::DrillArm(const list<unique_ptr<RobotPart>>& newparts):
+	RE_Name("Drill Arm")
+{
 	CreateDefault();
 	Attach(newparts);
 }
 DrillArm::~DrillArm(){}
 void DrillArm::CreateDefault(){
-	const int
-		minimum_drills(3),
-		minimum_bars(2),
-		minimum_plates(6)
-	;
-	for(int i=0; i<minimum_plates; i++)
-		PartsList__.push_back(new SmartPlate());
-	for(int i=0; i<minimum_drills; i++)
-		PartsList__.push_back(new Drill());
-	for(int i=0; i<minimum_bars; i++)
-		PartsList__.push_back(new SmartBar());
-	Link__.push_back(Male_Female);
+	AppendPart(PartType::SmartPlate,minimum_plates);
+	AppendPart(PartType::Drill,minimum_drills);
+	AppendPart(PartType::SmartBar,minimum_bars);
+	AppendLink(RobotPart::Male_Female,minimum_mf);
 }
 
-GrabbingArm::GrabbingArm(const list<RobotPart*>& newparts){
+GrabbingArm::GrabbingArm(const list<unique_ptr<RobotPart>>& newparts):
+	RE_Name("Grabbing Arm")
+{
 	CreateDefault();
 	Attach(newparts);
 }
 GrabbingArm::~GrabbingArm(){}
 void GrabbingArm::CreateDefault(){
-	const int
-		minimum_claws(1),
-		minimum_bars(2),
-		minimum_plates(6)
-	;
-	for(int i=0; i<minimum_plates; i++)
-		PartsList__.push_back(new SmartPlate());
-	for(int i=0; i<minimum_claws; i++)
-		PartsList__.push_back(new Drill());
-	for(int i=0; i<minimum_bars; i++)
-		PartsList__.push_back(new SmartBar());
-	Link__.push_back(Male_Female);
+	AppendPart(PartType::SmartPlate,minimum_plates);
+	AppendPart(PartType::Drill,minimum_claws);
+	AppendPart(PartType::SmartBar,minimum_bars);
+	AppendLink(RobotPart::Male_Female,minimum_mf);
 }
 
-Joint::Joint(const list<RobotPart*>& newparts){
+Joint::Joint(const list<unique_ptr<RobotPart>>& newparts):	
+	RE_Name("Joint")
+{
 	CreateDefault();
 	Attach(newparts);
 }
 Joint::~Joint(){}
-void Joint::CreateDefault();
+void Joint::CreateDefault(){
+	AppendPart(PartType::SmartPlate,minimum_plates);
+	AppendPart(PartType::SmartBar,minimum_bars);
+	AppendPart(PartType::Motor,minimum_motors);
+	AppendPart(PartType::Servo,minimum_servos);
+	AppendLink(RobotPart::Wire,minimum_wire);
+}
 
-DriverWheel::DriverWheel(const list<RobotPart*>& newparts){
+DriverWheel::DriverWheel(const list<unique_ptr<RobotPart>>& newparts):
+	RE_Name("Driver Wheel")
+{
 	CreateDefault();
 	Attach(newparts);
 }
 DriverWheel::~DriverWheel(){}
-void DriverWheel::CreateDefault();
+void DriverWheel::CreateDefault(){
+	AppendPart(PartType::SmartBar,minimum_bars);
+	AppendPart(PartType::Wheel,minimum_wheels);
+	AppendPart(PartType::Servo,minimum_servos);
+	AppendLink(RobotPart::Wire,minimum_wire);
+}
 
-BRAIN::BRAIN(const list<RobotPart*>& newparts){
+BRAIN::BRAIN(const list<unique_ptr<RobotPart>>& newparts):
+	RE_Name("BRAIN")
+{
 	CreateDefault();
 	Attach(newparts);
 }
 BRAIN::~BRAIN(){}
 void BRAIN::CreateDefault(){
-	const int
-		minimum_mcontrollers(4),
-		minimum_plates(5)
-	;
-	for(int i=0; i < minimum_mcontrollers; i++){
-		PartsList.push_back(new Microcontrollers());
-		Link__.push_back(Male_Female);
-		Link__.push_back(Male_Female);
-	}
-	for(int i=0; i < minimum_plates; i++)
-		PartsList.push_back(new SmartPlate());
+	AppendPart(PartType::Microcontroller,minimum_mcontroller);
+	AppendPart(PartType::SmartPlate,minimum_plates);
+	AppendLink(RobotPart::Male_Female,minimum_mf);
 }
