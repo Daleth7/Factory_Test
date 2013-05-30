@@ -91,6 +91,8 @@ class SensorModule: public RobotExtensions{
 			minimum_servos(1),
 			minimum_lsensors(16),
 			minimum_ussensors(4),
+			minimum_mcontroller(2),
+			minimum_monitor(1),
 			minimum_mf(1),
 			minimum_gear(1)
 		;
