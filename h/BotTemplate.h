@@ -1,10 +1,10 @@
 #ifndef BOTTEMPLATE_H
 	#define BOTTEMPLATE_H
 
-#include <list>
+#include <vector>
 #include <memory>
 
-using std::list;
+using std::vector;
 using std::unique_ptr;
 
 class RobotExtensions;
@@ -18,12 +18,11 @@ enum class RobotTemplate{
 	Speedy,
 	None
 };
-Robot* Assemble(RobotTemplate=RobotTemplate::None);
 struct Robot{
-	Robot();
-	Robot(const list<unique_ptr<RobotExtensions>>&={});
+//	Robot(const vector<unique_ptr<RobotExtensions>>& ={});
 	void Execute();
-	list<unique_ptr<RobotExtensions>> __extensions;
+	vector<unique_ptr<RobotExtensions>> __extensions;
 };
+Robot* Assemble(RobotTemplate=RobotTemplate::None);
 
 #endif

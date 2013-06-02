@@ -1,0 +1,243 @@
+
+    RobotPart is an abstract superclass from which
+  all types of robotic parts should be derived
+  from. It holds member variables and functions
+  that all types of robotic parts will use.
+  Its public members:
+    -Connection_t: an enumeration described in the
+	  above Enumerations section.
+	-ConnectionType(): a read-only function that
+	  returns a RobotPart::Connection_t value.
+	-Name(): a self-explanatory read-only
+	  function.
+	-Execute(): a purely virtual function with no
+	  return type. All machine instructions
+	  specific to the robotic parts are "executed"
+	  within the overriden versions of this
+	  function.
+	-~RobotPart(): a virtual destructor with no
+	  specific instructions. Exists only to make
+	  the derived classes' destructors virtual.
+  Its protected members:
+    -__Connection: a variable of type
+	  RobotPart::Connection_t
+	-Name__: a variable of type std::string
+	-RobotPart(string,Connection_t): the sole
+	  constructor to be used only by the derived
+	  classes. The first parameter is used to
+	  initialize Name__ and second to initialize
+	  __Connection. This function's second
+	  parameter has the default value Independent.
+	  
+    Claw is a public derivation of RobotPart that
+  represents a simple half, circular loop piece.
+  Its public members:
+    -Claw(): default constructor that calls 
+	  RobotPart(string,Connection_t).
+	-Execute(): void function overriding the base
+	  class's version.
+	
+	Drill is a public derivation of RobotPart that
+  represents a stereotypical cone drill with teeth
+  welded in a sprial pattern along its surface.
+  Its public members:
+    -Drill(): default constructor that calls
+	  RobotPart(string,Connection_t);
+	-Execute(): void function overriding the base
+	  class's version. This calls Stop() if the
+	  hardness of the material drilled into is
+	  higher than the hardness rating of the drill
+	  bit.
+	-Stop(): a function with no return value that
+	  stops the part from executing its machine
+	  instructions.
+  Its private variables:
+    -__hardness_rating__: a self-explanatory,
+	  double variable. Follows the Mohs scale.
+	  
+	SmartPlate is a public derivation of RobotPart
+  that represents a thick plate with embedded
+  sensors.
+  Its public members:
+    -SmartPlate(): default constructor that calls
+	  RobotPart(string,Connection_t);
+	-Execute(): void function overriding the base
+	  class's version. Keeps track of plate's
+	  status, modifying __current_temperature__.
+	-CurrentTemp(): a read-only function that
+      returns __current_temperature__.
+	-HardRate(): a read-only function that
+      returns __hardness_rating__.
+	-HeatRate(): a read-only function that
+      returns __heat_rating__.
+	-StiffRate(): a read-only function that
+      returns __stiffness__.
+  Its private variables:
+    -__hardness_rating__: a self-explanatory,
+	  double variable. Follows the Mohs scale.
+	-__stiffness__: a double variable measured in
+	  Newtons per meter.
+	-__heat_rating__: a double variable measured
+	  in degrees Celsius, representing the
+	  maximum temperature the part can handle
+	  before failing.
+	-__current_temperature__: a self-explanatory,
+	  double variable. Measured in degrees
+	  Celsius.
+	  
+	SmartBar is a public derivation of RobotPart
+  that represents a thick, square bar with
+  embedded sensors.
+  Its public members:
+    -SmartBar(): default constructor that calls
+	  RobotPart(string,Connection_t);
+	-Execute(): void function overriding the base
+	  class's version. Keeps track of bar's
+	  status, modifying __deflection__ and
+	  __current_temperature__.
+	-CurrentTemp(): a read-only function that
+      returns __current_temperature__.
+	-HardRate(): a read-only function that
+      returns __hardness_rating__.
+	-HeatRate(): a read-only function that
+      returns __heat_rating__.
+	-StiffRate(): a read-only function that
+      returns __stiffness__.
+	-Deflection(): a read-only function that
+	  returns __deflection__.
+  Its private variables:
+    -__hardness_rating__: a self-explanatory,
+	  double variable. Follows the Mohs scale.
+	-__stiffness__: a double variable measured in
+	  Newtons per meter.
+	-__heat_rating__: a double variable measured
+	  in degrees Celsius, representing the
+	  maximum temperature the part can handle
+	  before failing.
+	-__current_temperature__: a self-explanatory,
+	  double variable. Measured in degrees
+	  Celsius.
+	-__deflection__: a double variable measuring
+	  the current "bend" of the bar. Measured in
+	  meters.
+	
+	Motor is a public derivation of RobotPart that
+  represents a motor that spins continuously
+  according to the speed specified by the user.
+  Its public members:
+    -Motor(): default constructor that calls
+	  RobotPart(string,Connection_t);
+	-Execute(): void function overriding the base
+	  class's version. This calls Stop() if the
+	  motor is disrupted with a certain force.
+	-Stop(): a function with no return value that
+	  stops the part from executing its machine
+	  instructions.
+	
+	Servo is a public derivation of RobotPart that
+  represents a Servo that spins at a constant
+  speed and a number of radians specified by the
+  user.
+  Its public members:
+    -Servo(): default constructor that calls
+	  RobotPart(string,Connection_t);
+	-Execute(): void function overriding the base
+	  class's version. This calls Stop() if the
+	  servo is disrupted with a certain force.
+	-Stop(): a function with no return value that
+	  stops the part from executing its machine
+	  instructions.
+	
+	UltrasonicSensor is a public derivation of
+  RobotPart that represents a sensor that sends a
+  signal and tracks the time it took for the 
+  signal to return. From the time and constant
+  electromagnetic wave speed, the sensor
+  calculates the distance from the front face of
+  the sensor and the closest obstacle.
+  Its public members:
+    -UltrasonicSensor(): default constructor that
+	calls RobotPart(string,Connection_t);
+	-Execute(): void function overriding the base
+	  class's version.
+	-Read(): a read-only function that returns
+	  __echo_travel__.
+  Its private members:
+    -__echo_travel__: a double variable that
+	  represents the distance traveled by the
+	  output signal. Measured in meters.
+	
+	LightSensor is a public derivation of
+  RobotPart that represents a sensor that
+  measures the brightness of the environment.
+  Its public members:
+    -LightSensor(): default constructor that calls
+      RobotPart(string,Connection_t);
+	-Execute(): void function overriding the base
+	  class's version. Modifies __lux__.
+	-Read(): a read-only function that returns
+	  __lux__.
+  Its private members:
+    -__lux__: a double variable that represents
+	  the recorded brightness of the environment.
+	  
+	Monitor is a public derivation of
+  RobotPart that represents a basic interface
+  screen.
+  Its public members:
+    -Monitor(): default constructor that calls
+      RobotPart(string,Connection_t);
+	-Execute(): void function overriding the base
+	  class's version. Switches on the screen.
+	-Print(string,bool): void function whose first
+	  parameter holds the message to display and
+	  second parameter determines whether the
+	  screen should be cleared or not. True
+	  indicates that the screen will be cleared.
+	  The default value of the second parameter is
+	  false.
+	  
+	Antenna is a public derivation of
+  RobotPart that represents an analog input
+  reciever.
+  Its public members:
+    -Antenna(): default constructor that calls
+      RobotPart(string,Connection_t);
+	-Execute(): void function overriding the base
+	  class's version. Modifies __data__.
+	-Read(): a read-only function that returns 
+	  __data__ as a long unsigned int value.
+	-frequency: 
+};------------------------------------------------
+struct Antenna: public RobotPart{
+	Antenna();
+	void Execute();
+	long unsigned int Read()const;
+	double frequency;
+	private:
+			//data in bitarray recieved from signal
+		long unsigned int __data___;
+};
+struct HUBBlock: public RobotPart{
+	HUBBlock();
+	void Execute();
+};
+struct Microcontroller: public RobotPart{
+Microcontroller();
+	void Execute();
+	void _Abort();
+	private:
+		vector<unsigned short> __data__;
+		template<typename T>
+			struct DataManager{
+			T __idata__;
+			void Input(T newdata){
+				/*Do stuff*/
+			}
+			T Output()const{
+				/*do w/e stuff*/
+				return __idata__;
+			}
+			/*Functions for managing the data*/
+		};
+};

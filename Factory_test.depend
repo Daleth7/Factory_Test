@@ -1,0 +1,35 @@
+# depslib dependency file v1.0
+1370123846 source:c:\users\depes\documents\github\factory_test\main.cpp
+	"BotTemplate.h"
+	"Extensions.h"
+	"Parts.h"
+	<iostream>
+	<memory>
+
+1369966843 c:\users\depes\documents\github\factory_test\h\bottemplate.h
+	<vector>
+	<memory>
+
+1370051201 source:c:\users\depes\documents\github\factory_test\src\bottemplate.cpp
+	"Extensions.h"
+	"BotTemplate.h"
+	<iterator>
+
+1370135217 c:\users\depes\documents\github\factory_test\h\extensions.h
+	"Parts.h"
+	<vector>
+	<string>
+
+1370135651 c:\users\depes\documents\github\factory_test\h\parts.h
+	<string>
+	<list>
+	<memory>
+
+1370123895 source:c:\users\depes\documents\github\factory_test\src\extensions.cpp
+	"Parts.h"
+	"Extensions.h"
+
+1370123816 source:c:\users\depes\documents\github\factory_test\src\parts.cpp
+	"Parts.h"
+	<cmath>
+
