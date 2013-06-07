@@ -1,29 +1,63 @@
-#include "Parts.h"
+/*                 Extensions.cpp
+  --------------------Synopsis--------------------
+    This file defines the functions declared in 
+  Parts.h. In each of the defined constructors,
+  there is a string literal.
+  
+  --------------------Warnings--------------------  
+	The Build(ExtensionType) function returns a 
+  raw pointer to a dynamically allocated object.
+  The caller of this function will be responsible
+  for deallocating the memory.
+
+  ---------------Included Libraries---------------
+    <memory> has been included for the
+  std::unique_ptr<> class template, which is used
+  in the defined constructors.
+  
+  From Extensions.h:
+    <string> has been included for std::string,
+  which is used to hold the new "names" of the 
+  robotic extensions.
+  
+  ------------------Type Aliases------------------
+    std::string has been aliased with the using 
+  keyword so that "string" may be used.
+  
+  ----------------------Notes---------------------
+    Because this is just a Abstract Factory and
+  Factory test, no focus is given on the specific
+  execution procedures in Execute() and 
+  ExecuteAll().
+*/
 #include "Extensions.h"
 
-RobotExtensions::RobotExtensions():
+#include <memory>
+RobotExtension::RobotExtension():
 	RE_Name__("HUB")
 {
-	PartsList__.push_back(Build(PartType::HUBBlock));
+	std::unique_ptr<RobotPart> catalyst(Build(PartType::HUBBlock));
+	PartsList__.push_back(*catalyst);
 	Link__.push_back(RobotPart::Wire);
 	Link__.push_back(RobotPart::Snap);
 	Link__.push_back(RobotPart::Gear);
 	Link__.push_back(RobotPart::Male_Female);
 }
-RobotExtensions::RobotExtensions(string newname):
+RobotExtension::RobotExtension(string newname):
 	RE_Name__(newname)
 {}
-RobotExtensions::~RobotExtensions(){}
-string RobotExtensions::Name()const{return RE_Name__;}
-vector<Botpart> RobotExtensions::PartsList()const{}//return PartsList__;}
-vector<RobotPart::Connection_t> RobotExtensions::LinkList()const{return Link__;}
-void RobotExtensions::Attach(const vector<Botpart>& newparts){
+RobotExtension::~RobotExtension(){}
+using std::string;
+string RobotExtension::Name()const{return RE_Name__;}
+vector<RobotPart> RobotExtension::PartsList()const{return PartsList__;}
+vector<RobotPart::Connection_t> RobotExtension::LinkList()const{return Link__;}
+void RobotExtension::Attach(const vector<RobotPart>& newparts){
 	if(newparts.size() < 1)	return;
 	PartsList__.resize(PartsList__.size() + newparts.size());
 	for(auto part___ = newparts.begin(); part___ != newparts.end(); part___++){
 		if(Link__.empty())	break;
 		for(auto alink__ = Link__.begin(); alink__ != Link__.end(); alink__++){
-			if((*alink__) == (*part___)->ConnectionType()){
+			if((*alink__) == part___->ConnectionType()){
 				PartsList__.push_back(*part___);
 				Link__.erase(alink__);
 				break;
@@ -31,12 +65,14 @@ void RobotExtensions::Attach(const vector<Botpart>& newparts){
 		}
 	}
 }
-void RobotExtensions::AppendPart(PartType newtype,const int max){
+#include <utility>
+void RobotExtension::AppendPart(PartType newtype,const int max){
+	std::unique_ptr<RobotPart> newpart;
 	switch(newtype){
 		case PartType::Claw:
 			for(int i=0; i<max; ++i){
-				newpart = Build(PartType::Claw);
-				PartsList__.push_back(Botpart(newpart));
+				newpart = std::move(std::unique_ptr(Build(PartType::Claw)));
+				PartsList__.push_back(RobotPart(newpart));
 			}
 			break;
 		case PartType::Drill:
@@ -71,14 +107,14 @@ void RobotExtensions::AppendPart(PartType newtype,const int max){
 			break;
 	}
 }
-inline void RobotExtensions::AppendLink(RobotPart::Connection_t newcon, const int max){
+inline void RobotExtension::AppendLink(RobotPart::Connection_t newcon, const int max){
 	for(int i=0; i<max; ++i)	Link__.push_back(newcon);
 }
-inline void RobotExtensions::ExecuteAll(){
+inline void RobotExtension::ExecuteAll(){
 	for(auto iter = PartsList__.begin(); iter != PartsList__.end(); ++iter)	(*iter)->Execute();
 }
 
-RobotExtensions* Build(ExtensionType Etype, const vector<Botpart>& new_parts){
+RobotExtension* Build(ExtensionType Etype, const vector<RobotPart>& new_parts){
 	switch(Etype){
 		case ExtensionType::Frame:        return new Frame(new_parts);
 		case ExtensionType::Chassis:      return new Chassis(new_parts);
@@ -91,8 +127,8 @@ RobotExtensions* Build(ExtensionType Etype, const vector<Botpart>& new_parts){
 	}
 }
 
-Frame::Frame(const vector<Botpart>& newparts):
-	RobotExtensions("Frame")
+Frame::Frame(const vector<RobotPart>& newparts):
+	RobotExtension("Frame")
 {
 	CreateDefault();
 	Attach(newparts);
@@ -104,8 +140,8 @@ void Frame::CreateDefault(){
 }
 void Frame::Execute(){try{ExecuteAll();}catch(...){}}
 
-Chassis::Chassis(const vector<Botpart>& newparts):
-	RobotExtensions("Chassis")
+Chassis::Chassis(const vector<RobotPart>& newparts):
+	RobotExtension("Chassis")
 {
 	CreateDefault();
 	Attach(newparts);
@@ -125,8 +161,8 @@ void Chassis::Execute(){
 	try{ExecuteAll();}catch(...){}
 }
 
-SensorModule::SensorModule(const vector<Botpart>& newparts):
-	RobotExtensions("Sensor Module")
+SensorModule::SensorModule(const vector<RobotPart>& newparts):
+	RobotExtension("Sensor Module")
 {
 	CreateDefault();
 	Attach(newparts);
@@ -157,8 +193,8 @@ void SensorModule::Execute(){
 	try{ExecuteAll();}catch(...){}
 }
 
-DrillArm::DrillArm(const vector<Botpart>& newparts):
-	RobotExtensions("Drill Arm")
+DrillArm::DrillArm(const vector<RobotPart>& newparts):
+	RobotExtension("Drill Arm")
 {
 	CreateDefault();
 	Attach(newparts);
@@ -171,8 +207,8 @@ void DrillArm::CreateDefault(){
 }
 void DrillArm::Execute(){try{ExecuteAll();}catch(...){}}
 
-GrabbingArm::GrabbingArm(const vector<Botpart>& newparts):
-	RobotExtensions("Grabbing Arm")
+GrabbingArm::GrabbingArm(const vector<RobotPart>& newparts):
+	RobotExtension("Grabbing Arm")
 {
 	CreateDefault();
 	Attach(newparts);
@@ -185,8 +221,8 @@ void GrabbingArm::CreateDefault(){
 }
 void GrabbingArm::Execute(){try{ExecuteAll();}catch(...){}}
 
-Joint::Joint(const vector<Botpart>& newparts):
-	RobotExtensions("Joint")
+Joint::Joint(const vector<RobotPart>& newparts):
+	RobotExtension("Joint")
 {
 	CreateDefault();
 	Attach(newparts);
@@ -200,8 +236,8 @@ void Joint::CreateDefault(){
 }
 void Joint::Execute(){try{ExecuteAll();}catch(...){}}
 
-DriverWheel::DriverWheel(const vector<Botpart>& newparts):
-	RobotExtensions("Driver Wheel")
+DriverWheel::DriverWheel(const vector<RobotPart>& newparts):
+	RobotExtension("Driver Wheel")
 {
 	CreateDefault();
 	Attach(newparts);
@@ -213,8 +249,8 @@ void DriverWheel::CreateDefault(){
 }
 void DriverWheel::Execute(){try{ExecuteAll();}catch(...){}}
 
-BRAIN::BRAIN(const vector<Botpart>& newparts):
-	RobotExtensions("BRAIN")
+BRAIN::BRAIN(const vector<RobotPart>& newparts):
+	RobotExtension("BRAIN")
 {
 	CreateDefault();
 	Attach(newparts);

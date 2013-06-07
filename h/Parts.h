@@ -7,18 +7,15 @@
   
   --------------------Warnings--------------------
     To add new classes of robotic parts requires--
-  besides adding the class declaration--that:
+  besides adding the class definition--that:
     1) the new class derive publicly from the
 	  abstract class RobotPart and override its
-	  virtual methods which are listed below in 
-	  the Classes section.
+	  virtual methods which are listed below.
     2) within PartType, a new enumeration value 
-	  whose name be the same as the new class.
-    3) within Build(PartType), a new case in the
-      switch-case statement return an allocated
-	  object of the new class.
-    4) the new class be documented in the Classes
-      section below.
+	  have the same name as the new class.
+    3) within the Build(PartType) implementation,
+      a new case in the switch-case statement 
+	  return an allocated object of the new class.
 	  
 	The Build(PartType) function returns a raw
   pointer to a dynamically allocated object. The
@@ -38,45 +35,20 @@
   with the using keyword so that "string" and 
   "vector" may be used.
   
-  ------------------Enumerations------------------
-    PartType is a strongly typed enumeration that
-  represents each type of robotic part available.
-  All PartType values have the same name as the
-  type of robotic part.
-  
-    RobotPart::Connection_t is an enumeration
-  within the abstract class RobotPart that
-  represents the different types of connections
-  that "links" parts together. Available
-  RobotPart::Connection_t values are:
-    -Connection_t::Wire
-    -Connection_t::Snap
-    -Connection_t::Gear
-    -Connection_t::Male_Female
-    -Connection_t::Independent
-    -Connection_t::None
-  
-  ----------------Global Functions----------------
-    Build(PartType) returns a new part of type
-  RobotPart* that points to a dynamically
-  allocated space. The function's caller will be
-  responsible for deallocating the allocated 
-  space. This function has the default value
-  PartType::None.
-  
-  --------------------Classes---------------------
+  ----------------------Notes---------------------
+    The subclasses of RobotPart originally had no
+  private members, which is why they are all
+  structs.
 */ 
 #ifndef PARTS_H
 	#define PARTS_H
 	
 #include <string>
-#include <vector>
-	//All measurements follow the metric system kms
-using std::string;
-using std::vector;
 
-class RobotPart;
-
+//PartType is a strongly typed enumeration that
+//  represents each type of robotic part available.
+//  All PartType values have the same name as the
+//  type of robotic part.
 enum class PartType{
 	Claw,
 	Drill,
@@ -92,12 +64,20 @@ enum class PartType{
 	Microcontroller,
 	None
 };
-
+	//Prototype RobotPart, so Build(PartType) is shown first
+class RobotPart;
+	//Build(PartType) returns a new part of type
+	//  RobotPart* that points to a dynamically
+	//  allocated space. The function's caller will be
+	//  responsible for deallocation.
 RobotPart* Build(PartType=PartType::None);
 	//Create an abstract classification for robot parts
 class RobotPart{
 	public:
-		//Arbitrary naming system for types of connections
+		using string=std::string;
+	//RobotPart::Connection_t is an enumeration
+	//  that represents the different types of
+    //  connections "linking" parts together.
 		enum Connection_t{
 			Wire,
 			Snap,
@@ -109,15 +89,16 @@ class RobotPart{
 			//Return type of connection for comparison
 		Connection_t ConnectionType()const;
 		const string& Name()const;
-			//Execute machine instructions in part's controller
+			//Execute machine instructions in part's chip
 		virtual void Execute() = 0;
 			//Make virtual to avoid problems
 		virtual ~RobotPart();
 	protected:
-		Connection_t __Connection;
-		string Name__;
 			//Initialize name of part and its connection type
 		RobotPart(string, Connection_t=Independent);
+	private:
+		Connection_t __Connection;
+		string Name__;
 };
 	//Various parts
 struct Claw: public RobotPart{
@@ -204,12 +185,13 @@ struct HUBBlock: public RobotPart{
 	HUBBlock();
 	void Execute();
 };
+#include <vector>
 struct Microcontroller: public RobotPart{
 	Microcontroller();
 	void Execute();
 	void _Abort();
 	private:
-		vector<unsigned short> __data__;
+		std::vector<unsigned short> __data__;
 		template<typename T>
 			struct DataManager{
 				T __idata__;
@@ -224,4 +206,4 @@ struct Microcontroller: public RobotPart{
 		};
 };
 
-#endif
+#endif //end PARTS_H

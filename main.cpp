@@ -11,7 +11,7 @@ using std::endl;
 int main(int argc, char* argv[]){
  //   std::unique_ptr<RobotPart> RP_ptr = Build(PartType::SmartPlate);
     RobotPart* RP_ptr = Build(PartType::SmartPlate);
-    RobotExtensions* RE_ptr = Build(ExtensionType::GrabbingArm);
+    RobotExtension* RE_ptr = Build(ExtensionType::GrabbingArm);
     cout << RP_ptr->Name() << endl;
     delete RP_ptr;
 //    for(auto iter = RE_ptr->PartsList().begin(); iter != RE_ptr->PartsList().end(); ++iter)

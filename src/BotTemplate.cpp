@@ -8,8 +8,8 @@ using std::end;
 
 Robot* Assemble(RobotTemplate choice){
 	auto RE_Build = [](ExtensionType new_etype=ExtensionType::None)
-		{return unique_ptr<RobotExtensions>(Build(new_etype));};
-	vector<unique_ptr<RobotExtensions>> toreturn;
+		{return unique_ptr<RobotExtension>(Build(new_etype));};
+	vector<unique_ptr<RobotExtension>> toreturn;
 	switch(choice){
 		case RobotTemplate::Basic:
 //			toreturn.push_back(RE_Build(ExtensionType::Frame));
@@ -130,11 +130,11 @@ Robot* Assemble(RobotTemplate choice){
 */		default:	return new Robot();
 	}
 }/*
-Robot::Robot(const vector<unique_ptr<RobotExtensions>>& newextensions){
+Robot::Robot(const vector<unique_ptr<RobotExtension>>& newextensions){
 	if(newextensions.size()>0)	__extensions = newextensions;
 	else{
 		for(size_t i=0; i<7; ++i)
-			__extensions.push_back(unique_ptr<RobotExtensions>(Build()));
+			__extensions.push_back(unique_ptr<RobotExtension>(Build()));
 	}
 }*/
 void Robot::Execute(){

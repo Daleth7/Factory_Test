@@ -7,7 +7,7 @@
 using std::vector;
 using std::unique_ptr;
 
-class RobotExtensions;
+class RobotExtension;
 
 enum class RobotTemplate{
 	Basic,
@@ -19,9 +19,9 @@ enum class RobotTemplate{
 	None
 };
 struct Robot{
-//	Robot(const vector<unique_ptr<RobotExtensions>>& ={});
+//	Robot(const vector<unique_ptr<RobotExtension>>& ={});
 	void Execute();
-	vector<unique_ptr<RobotExtensions>> __extensions;
+	vector<unique_ptr<RobotExtension>> __extensions;
 };
 Robot* Assemble(RobotTemplate=RobotTemplate::None);
 

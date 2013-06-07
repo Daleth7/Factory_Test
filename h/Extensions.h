@@ -1,3 +1,46 @@
+/*                  Extensions.h
+  --------------------Synopsis--------------------
+    This file defines the various robot extensions
+  that are made of various robot parts. In this
+  file is a factory method called CreateDefault().
+  
+  --------------------Warnings--------------------
+    To add new classes of robotic extensions 
+  requires--besides adding the class definition--
+  that:
+    1) the new class derive publicly from the
+	  abstract class RobotExtension and override 
+	  its virtual methods which are listed below.
+    2) within ExtensionType, a new enumeration 
+	  value have the same name as the new class.
+    3) within the Build(ExtensionType) 
+	  implementation, a new case in the switch-
+	  case statement return an allocated object 
+	  of the new class.
+	  
+	The Build(ExtensionType) function returns a 
+  raw pointer to a dynamically allocated object. 
+  The caller of this function will be responsible
+  for deallocating the memory.
+
+  ---------------Included Libraries---------------
+    <string> has been included for std::string,
+  which is used to hold the "names" of the robotic
+  extensions.
+    <vector> has been included for std::vector,
+  which is used in RobotExtension to hold the 
+  "robot parts."
+  
+  ------------------Type Aliases------------------
+    std::string and std::vector have been aliased
+  with the using keyword so that "string" and 
+  "vector" may be used.
+  
+  ----------------------Notes---------------------
+    Because this is just a Abstract Factory and
+  Factory test, no focus is given on the Execute()
+  and ExecuteAll() methods.
+*/
 #ifndef EXTENSIONS_H
 	#define EXTENSIONS_H
 
@@ -5,9 +48,6 @@
 
 #include <vector>
 #include <string>
-
-using std::vector;
-using std::string;
 
 enum class ExtensionType{
 	Frame,
@@ -21,39 +61,60 @@ enum class ExtensionType{
 	None
 };
 
-class RobotExtensions{
+class RobotExtension;
+	//Build specific extensions based on type
+	//  and appends any additional parts from
+	//  second parameter
+RobotExtension* Build(
+	ExtensionType=ExtensionType::None,
+	const std::vector<RobotPart>& ={}
+);
+	//Cannot figure how to keep this 
+	//   inside the class
+using std::vector;
+class RobotExtension{
 	public:
+		using string=std::string;
+			//Add the parts specific to each 
+			//   subclass to the PartsList__
+			//   container
 		virtual void CreateDefault() = 0;
+			//Calls ExecuteAll() and specific
+			//  instructions
 		virtual void Execute() = 0;
 		vector<RobotPart> PartsList()const;
-		vector<RobotPart::Connection_t> LinkList()const;
+		vector<RobotPart::Connection_t> 
+			LinkList()const;
 		string Name()const;
 		void Attach(const vector<RobotPart>&);
-			//Call CreateDefault and AddtoPartsList
-		explicit RobotExtensions();
-		virtual ~RobotExtensions();
+		explicit RobotExtension();
+		virtual ~RobotExtension();
 	protected:
-			//Protect to disallow random naming of parts
-		RobotExtensions(string);
-		vector<RobotPart> PartsList__;
-		vector<RobotPart::Connection_t> Link__;
-		string RE_Name__;
-			//For use in overridden CreateDefault() calls
-		void AppendPart(PartType=PartType::None,const int=0);
+			//Protect to disallow random naming
+		RobotExtension(string);
+			//For use in overridden CreateDefault()
+			//   calls; takes in type of part and
+			//   the number of that part to append.
+		void AppendPart(
+			PartType=PartType::None,
+			const int=0
+		);
+			//Similar to above function but for 
+			//   link types
 		void AppendLink(
-			RobotPart::Connection_t=RobotPart::Connection_t::None,
+			RobotPart::Connection_t
+				=RobotPart::Connection_t::None,
 			const int=0
 		);
 			//For use in overriden Execute() calls
 		void ExecuteAll();
+	private:
+		vector<RobotPart> PartsList__;
+		vector<RobotPart::Connection_t> Link__;
+		string RE_Name__;
 };
 
-RobotExtensions* Build(
-	ExtensionType=ExtensionType::None,
-	const vector<RobotPart>& ={}
-);
-
-class Frame: public RobotExtensions{
+class Frame: public RobotExtension{
 	public:
 		Frame(const vector<RobotPart>& = {});
 		void CreateDefault();
@@ -65,7 +126,7 @@ class Frame: public RobotExtensions{
 			minimum_snap=minimum_mf/2
 		;
 };
-class Chassis: public RobotExtensions{
+class Chassis: public RobotExtension{
 	public:
 		Chassis(const vector<RobotPart>& = {});
 		void CreateDefault();
@@ -80,9 +141,11 @@ class Chassis: public RobotExtensions{
 		;
 		string __message;
 };
-class SensorModule: public RobotExtensions{
+class SensorModule: public RobotExtension{
 	public:
-		SensorModule(const vector<RobotPart>& = {});
+		SensorModule(
+			const vector<RobotPart>& = {}
+		);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -97,9 +160,11 @@ class SensorModule: public RobotExtensions{
 			minimum_gear=1
 		;
 };
-class DrillArm: public RobotExtensions{
+class DrillArm: public RobotExtension{
 	public:
-		DrillArm(const vector<RobotPart>& = {});
+		DrillArm(
+			const vector<RobotPart>& = {}
+		);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -110,9 +175,11 @@ class DrillArm: public RobotExtensions{
 			minimum_mf=1
 		;
 };
-class GrabbingArm: public RobotExtensions{
+class GrabbingArm: public RobotExtension{
 	public:
-		GrabbingArm(const vector<RobotPart>& = {});
+		GrabbingArm(
+			const vector<RobotPart>& = {}
+		);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -123,9 +190,11 @@ class GrabbingArm: public RobotExtensions{
 			minimum_mf=1
 		;
 };
-class Joint: public RobotExtensions{
+class Joint: public RobotExtension{
 	public:
-		Joint(const vector<RobotPart>& = {});
+		Joint(
+			const vector<RobotPart>& = {}
+		);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -137,9 +206,11 @@ class Joint: public RobotExtensions{
 			minimum_wire=2
 		;
 };
-class DriverWheel: public RobotExtensions{
+class DriverWheel: public RobotExtension{
 	public:
-		DriverWheel(const vector<RobotPart>& = {});
+		DriverWheel(
+			const vector<RobotPart>& = {}
+		);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -149,9 +220,11 @@ class DriverWheel: public RobotExtensions{
 			minimum_wire=1
 		;
 };
-class BRAIN: public RobotExtensions{
+class BRAIN: public RobotExtension{
 	public:
-		BRAIN(const vector<RobotPart>& = {});
+		BRAIN(
+			const vector<RobotPart>& = {}
+		);
 		void CreateDefault();
 		void Execute();
 	private:

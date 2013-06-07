@@ -1,6 +1,39 @@
+/*                   Parts.cpp
+  --------------------Synopsis--------------------
+    This file defines the functions declared in 
+  Parts.h. In each of the defined constructors,
+  there are string and number literals specific
+  to each part. All measurements are in the 
+  metric system mks.
+  
+  --------------------Warnings--------------------  
+	The Build(PartType) function returns a raw
+  pointer to a dynamically allocated object. The
+  caller of this function will be responsible for
+  deallocating the memory.
+
+  ---------------Included Libraries---------------
+    <cmath> has been included for the pow(double,
+  double) function in the various Execute
+  functions.
+  
+  From Parts.h:
+    <string> has been included for std::string,
+  which is used to hold the new "names" of the 
+  robotic parts.
+  
+  ------------------Type Aliases------------------
+    std::string has been aliased with the using 
+  keyword so that "string" may be used.
+  
+  ----------------------Notes---------------------
+    Because this is just a Abstract Factory and
+  Factory test, no focus is given on the specific
+  execution procedures the parts use.
+*/
 #include "Parts.h"
 
-unique_ptr<RobotPart> Build(PartType requested){
+RobotPart* Build(PartType requested){
 	switch(requested){
 		case PartType::Claw:             return unique_ptr<RobotPart>(new Claw());
 		case PartType::Drill:            return unique_ptr<RobotPart>(new Drill());
@@ -134,5 +167,5 @@ void Microcontroller::Execute(){
 	/*Execute program typed in this block*/
 }
 void Microcontroller::_Abort(){
-	/*Abort current thread and throw some code*/
+	/*Abort current thread and throw some error code number*/
 }
