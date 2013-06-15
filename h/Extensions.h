@@ -1,45 +1,49 @@
-/*                  Extensions.h
-  --------------------Synopsis--------------------
-    This file defines the various robot extensions
-  that are made of various robot parts. In this
-  file is a factory method called CreateDefault().
-  
-  --------------------Warnings--------------------
-    To add new classes of robotic extensions 
-  requires--besides adding the class definition--
-  that:
-    1) the new class derive publicly from the
-	  abstract class RobotExtension and override 
-	  its virtual methods which are listed below.
-    2) within ExtensionType, a new enumeration 
-	  value have the same name as the new class.
-    3) within the Build(ExtensionType) 
-	  implementation, a new case in the switch-
-	  case statement return an allocated object 
-	  of the new class.
-	  
-	The Build(ExtensionType) function returns a 
-  raw pointer to a dynamically allocated object. 
-  The caller of this function will be responsible
-  for deallocating the memory.
+/*                            Extensions.h
+  ------------------------------Synopsis------------------------------
+    This file defines the various robot extensions that are made of 
+  various robot parts. In this file is a factory method called 
+  CreateDefault().
 
-  ---------------Included Libraries---------------
-    <string> has been included for std::string,
-  which is used to hold the "names" of the robotic
-  extensions.
-    <vector> has been included for std::vector,
-  which is used in RobotExtension to hold the 
-  "robot parts."
+  ------------------------------Warnings------------------------------
+    To add new classes of robotic extensions requires--besides adding
+  the class definition--that:
+    1) the new class derive publicly from the abstract class
+	  RobotExtension and override its virtual methods which are listed
+	  below.
+    2) within ExtensionType, a new enumeration value have the same
+	  name as the new class.
+    3) within the Build(ExtensionType) implementation, a new case in
+	  the switch-case statement return an allocated object of the new
+	  class.
+
+	The Build(ExtensionType) and Build(ExtensionType,_RP_vec&) 
+  functions returns raw pointers to dynamically allocated objects.
+  The caller of these functions will be responsible for deallocating
+  the memory.
+
+  -------------------------Included Libraries-------------------------
+    <string> has been included for std::string, which is used to hold
+  the "names" of the robotic extensions.
+    <vector> has been included for std::vector, which is used in
+  RobotExtension to hold the "robot parts."
+
+  ----------------------------Type Aliases----------------------------
+    The following aliases reside under the RE_Types namespace.
+    std::string has been aliased as _string.
+    std::vector<RobotPart*> has been aliased as _vec_RPptr.
+    std::vector<const RobotPart*> has been aliased as _vec_Con_RPptr.
+    std::vector<RobotPart> has been aliased as _RP_vec.
+    std::vector<RobotPart::Connection_t> has been aliased as 
+  _RP_Con_vec.
+
+  -------------------------------Notes--------------------------------
+    Because this is just a Abstract Factory and Factory test, no focus
+  is given on the Execute() and ExecuteAll() methods.
   
-  ------------------Type Aliases------------------
-    std::string and std::vector have been aliased
-  with the using keyword so that "string" and 
-  "vector" may be used.
-  
-  ----------------------Notes---------------------
-    Because this is just a Abstract Factory and
-  Factory test, no focus is given on the Execute()
-  and ExecuteAll() methods.
+    Unfortunately, a conatiner of raw pointers is used because: 
+  1) some kind of pointer is needed as these point to various class
+  derivations; 2) smart pointers are resulting in too many head-aches
+  like dangling pointers and deleted copy constructors with unique_ptr.
 */
 #ifndef EXTENSIONS_H
 	#define EXTENSIONS_H
@@ -63,60 +67,72 @@ enum class ExtensionType{
 
 class RobotExtension;
 	//Build specific extensions based on type
-	//  and appends any additional parts from
-	//  second parameter
 RobotExtension* Build(
-	ExtensionType=ExtensionType::None,
-	const std::vector<RobotPart>& ={}
+	ExtensionType=ExtensionType::None
 );
-	//Cannot figure how to keep this 
+namespace RE_Types{
+	using _string         = std::string;
+	using _vec_RPptr      = std::vector<RobotPart*>;
+	using _vec_Con_RPptr  = std::vector<const RobotPart*>;
+	using _RP_vec         = std::vector<RobotPart>;
+	using _RP_Con_vec     = std::vector<RobotPart::Connection_t>;
+};
+	//Specialization for adding additional
+	//  parts along with a basic template
+RobotExtension* Build(ExtensionType,RE_Types::_RP_vec&);
+	//Cannot figure how to keep this
 	//   inside the class
-using std::vector;
 class RobotExtension{
 	public:
-		using string=std::string;
-			//Add the parts specific to each 
-			//   subclass to the PartsList__
-			//   container
+	//Add the parts specific to each
+	//   subclass to the PartsList__
+	//   container
 		virtual void CreateDefault() = 0;
-			//Calls ExecuteAll() and specific
-			//  instructions
+	//Calls ExecuteAll() and specific
+	//  instructions
 		virtual void Execute() = 0;
-		vector<RobotPart> PartsList()const;
-		vector<RobotPart::Connection_t> 
-			LinkList()const;
-		string Name()const;
-		void Attach(const vector<RobotPart>&);
+		RE_Types::_vec_Con_RPptr PartsList()const;
+		RE_Types::_RP_Con_vec LinkList()const;
+		RE_Types::_string Name()const;
+	//Don't use const, so iterator can be
+	//   used instead of const_iterator
+		void Attach(RE_Types::_RP_vec&);
 		explicit RobotExtension();
 		virtual ~RobotExtension();
 	protected:
-			//Protect to disallow random naming
-		RobotExtension(string);
-			//For use in overridden CreateDefault()
-			//   calls; takes in type of part and
-			//   the number of that part to append.
+	//Helper functions
+	//Protect to disallow random naming
+		RobotExtension(RE_Types::_string);
+	//For use in overridden CreateDefault()
+	//   calls; takes in type of part and
+	//   the number of that part to append.
 		void AppendPart(
 			PartType=PartType::None,
 			const int=0
 		);
-			//Similar to above function but for 
-			//   link types
+	//Similar to above function but for
+	//   link types
 		void AppendLink(
 			RobotPart::Connection_t
 				=RobotPart::Connection_t::None,
 			const int=0
 		);
-			//For use in overriden Execute() calls
+	//For use in overriden Execute() calls
 		void ExecuteAll();
-	private:
-		vector<RobotPart> PartsList__;
-		vector<RobotPart::Connection_t> Link__;
-		string RE_Name__;
+	//Member variables
+		RE_Types::_vec_RPptr   PartsList__;
+		RE_Types::_RP_Con_vec  Link__;
+		RE_Types::_string      RE_Name__;
 };
-
+	//All subsequent classes have constructors
+	//   that only take references instead of
+	//   const because they call
+	//   RobotExtension::Attach, which does not
+	//   take a constant reference
 class Frame: public RobotExtension{
 	public:
-		Frame(const vector<RobotPart>& = {});
+		Frame();
+		Frame(RE_Types::_RP_vec&);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -128,7 +144,8 @@ class Frame: public RobotExtension{
 };
 class Chassis: public RobotExtension{
 	public:
-		Chassis(const vector<RobotPart>& = {});
+		Chassis();
+		Chassis(RE_Types::_RP_vec&);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -139,13 +156,12 @@ class Chassis: public RobotExtension{
 			minimum_snap=minimum_plates_needed,
 			minimum_wire=minimum_plates_needed/2
 		;
-		string __message;
+		RE_Types::_string __message;
 };
 class SensorModule: public RobotExtension{
 	public:
-		SensorModule(
-			const vector<RobotPart>& = {}
-		);
+		SensorModule();
+		SensorModule(RE_Types::_RP_vec&);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -162,9 +178,8 @@ class SensorModule: public RobotExtension{
 };
 class DrillArm: public RobotExtension{
 	public:
-		DrillArm(
-			const vector<RobotPart>& = {}
-		);
+		DrillArm();
+		DrillArm(RE_Types::_RP_vec&);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -177,9 +192,8 @@ class DrillArm: public RobotExtension{
 };
 class GrabbingArm: public RobotExtension{
 	public:
-		GrabbingArm(
-			const vector<RobotPart>& = {}
-		);
+		GrabbingArm();
+		GrabbingArm(RE_Types::_RP_vec&);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -192,9 +206,8 @@ class GrabbingArm: public RobotExtension{
 };
 class Joint: public RobotExtension{
 	public:
-		Joint(
-			const vector<RobotPart>& = {}
-		);
+		Joint();
+		Joint(RE_Types::_RP_vec&);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -208,9 +221,8 @@ class Joint: public RobotExtension{
 };
 class DriverWheel: public RobotExtension{
 	public:
-		DriverWheel(
-			const vector<RobotPart>& = {}
-		);
+		DriverWheel();
+		DriverWheel(RE_Types::_RP_vec&);
 		void CreateDefault();
 		void Execute();
 	private:
@@ -222,9 +234,8 @@ class DriverWheel: public RobotExtension{
 };
 class BRAIN: public RobotExtension{
 	public:
-		BRAIN(
-			const vector<RobotPart>& = {}
-		);
+		BRAIN();
+		BRAIN(RE_Types::_RP_vec&);
 		void CreateDefault();
 		void Execute();
 	private:
